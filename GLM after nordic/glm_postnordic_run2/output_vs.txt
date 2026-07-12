@@ -1,0 +1,6 @@
+[glm] file: D:/NORDIC_Subject1_project/GLM after nordic/NORDIC_run2_mag_fixhdr.nii.gz
+[glm] fitting: n_scans=407 TR=3.0s conditions=['anticipation_high_cognition', 'anticipation_low_cognition', 'pain_high_cogn_high_pain', 'pain_high_cogn_low_pain', 'pain_low_cogn_high_pain', 'pain_low_cogn_low_pain', 'rating']
+[glm] maineffectofcognition saved
+[glm] maineffectofpain saved
+[glm] interactioneffect saved
+[qc] native tSNR (median) = 13.56

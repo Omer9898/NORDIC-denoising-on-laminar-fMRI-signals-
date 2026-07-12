@@ -1,0 +1,30 @@
+# Functional Mask
+
+## Overview
+This folder contains the ROI-based functional mask quality-control workflow used to verify that the left and right posterior insula masks were correctly positioned in anatomy space.
+
+## Purpose
+The aim of this section is visual quality control rather than final signal extraction. It is used to confirm that the ROI masks are anatomically plausible and correctly aligned with the anatomy-space functional reference image.
+
+## Why the functional mask was needed
+ROI masks and target images do not always share the same matrix size, voxel resolution, affine orientation, or sampling grid. Because of this, direct overlay without checking alignment can be misleading.
+
+## Processing summary
+For each run, the anatomy-space mean functional image was used as the grayscale background. The left and right ROI masks were loaded and resampled to the reference image grid using nearest-neighbor interpolation. After resampling:
+- the left ROI was converted to a binary mask
+- the right ROI was converted to a binary mask
+- both masks were combined into a single overlay for visualization
+
+The overlay was then saved as a PNG file for visual inspection.
+
+## Output types
+This folder may contain:
+- ROI overlay PNG files
+- mask-only NIfTI files
+- masked-image NIfTI files
+
+## Interpretation of outputs
+The mask file shows where the ROI is located after resampling. The masked image shows the anatomy-space image after the ROI has been applied. For final quality control, the overlay PNG is usually the clearest and most useful output.
+
+## Notes
+This section is intended for ROI placement and overlay verification only. Final statistical modeling remains in the GLM section.

@@ -1,0 +1,252 @@
+#!/usr/bin/env python3
+"""
+06_inspect_motion.py
+--------------------
+STANDALONE inspection / QA for a rigid-body motion-parameter file such as
+mag_POCS_r1_MoCorr.txt (expected shape: n_volumes x 6).
+
+Scope (deliberately narrow):
+  - load the text file robustly,
+  - label the 6 columns GENERICALLY (col1..col6) -- no assumption about which
+    are translations vs rotations,
+  - plot all 6 parameters across time,
+  - report min / max / mean / std (+ median, p95|.|, range) per column,
+  - offer a value-range heuristic to *suggest* which triplet is rotations.
+
+This file intentionally does NOT import or touch registration code, and does
+NOT do anything with the GLM. It only characterises the motion file.
+
+Requires: pip install numpy pandas matplotlib
+
+Usage:
+    python 06_inspect_motion.py --motion mag_POCS_r1_MoCorr.txt --out-dir mot_qa
+    # optional: --tr 2.0  (plots x-axis in seconds instead of volume index)
+    # optional: --n-expected 407  (asserts the row count matches your run length)
+"""
+import argparse
+import os
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+
+def load_motion(path):
+    """
+    Load the motion parameter file robustly.
+
+    What this function does:
+    - tries whitespace-delimited reading first,
+    - then tries comma-delimited reading,
+    - then falls back to pandas if the file contains stray headers or mixed formatting.
+
+    Why this is useful:
+    Motion files from different tools are not always formatted the same way.
+    """
+    last_err = None
+    for kw in ({}, {"delimiter": ","}):
+        try:
+            arr = np.loadtxt(path, **kw)
+            return arr
+        except Exception as e:
+            last_err = e
+
+    # Fallback parser for files with headers or unusual separators
+    try:
+        df = pd.read_csv(path, sep=None, engine="python", header=None, comment="#")
+        return df.apply(pd.to_numeric, errors="coerce").dropna(how="all").to_numpy()
+    except Exception:
+        raise ValueError(f"Could not parse {path}: {last_err}")
+
+
+def per_column_stats(arr):
+    """
+    Compute basic descriptive statistics for each motion column.
+
+    Returns a table with:
+    - min, max, mean, std
+    - median
+    - 95th percentile of absolute values
+    - full range
+    """
+    cols = [f"col{i+1}" for i in range(arr.shape[1])]
+    rows = []
+    for j, c in enumerate(cols):
+        v = arr[:, j]
+        rows.append({
+            "column": c,
+            "min": float(np.min(v)),
+            "max": float(np.max(v)),
+            "mean": float(np.mean(v)),
+            "std": float(np.std(v)),
+            "median": float(np.median(v)),
+            "p95_abs": float(np.percentile(np.abs(v), 95)),
+            "range": float(np.max(v) - np.min(v)),
+        })
+    return pd.DataFrame(rows)
+
+
+def reference_volume_guess(arr):
+    """
+    Guess the reference volume used for motion correction.
+
+    Idea:
+    The row closest to all zeros is often the reference volume,
+    because motion is measured relative to that volume.
+    """
+    norms = np.linalg.norm(arr, axis=1)
+    idx = int(np.argmin(norms))
+    return idx, float(norms[idx])
+
+
+def rotation_triplet_heuristic(arr):
+    """
+    Suggest which triplet of columns is likely rotations.
+
+    The heuristic compares the magnitude of:
+    - columns 1-3
+    - columns 4-6
+
+    Interpretation:
+    - If one triplet is much smaller, that triplet may be rotations in radians.
+    - If both triplets are similar, the unit convention is ambiguous,
+      and the producing software must be checked.
+    """
+    a = np.abs(arr)
+    p95_first = float(np.percentile(a[:, 0:3], 95))
+    p95_last = float(np.percentile(a[:, 3:6], 95))
+
+    small, large = sorted([("cols1-3", p95_first), ("cols4-6", p95_last)], key=lambda t: t[1])
+    ratio = (large[1] / small[1]) if small[1] > 0 else np.inf
+
+    lines = []
+    lines.append(f"  p95(|cols1-3|) = {p95_first:.4g}")
+    lines.append(f"  p95(|cols4-6|) = {p95_last:.4g}")
+    lines.append(f"  magnitude ratio (larger/smaller) = {ratio:.1f}x")
+
+    if small[1] < 0.1 and ratio > 5:
+        lines.append(
+            f"  => LIKELY: {small[0]} are ROTATIONS in RADIANS, "
+            f"{large[0]} are TRANSLATIONS in mm."
+        )
+        lines.append("     (small triplet clustered at |.|<0.1 rad ~ a few degrees.)")
+        verdict = "radians_rotations=" + small[0]
+    else:
+        lines.append("  => AMBIGUOUS from value ranges alone. Both triplets are")
+        lines.append("     comparable magnitude, consistent with rotations in DEGREES.")
+        lines.append("     Decide from the producing tool's convention:")
+        lines.append("       - FSL mcflirt (.par): 3 ROTATIONS (rad) THEN 3 translations (mm)")
+        lines.append("       - SPM realign (rp_*): 3 TRANSLATIONS (mm) THEN 3 rotations (rad)")
+        lines.append("       - AFNI 3dvolreg   : 3 ROTATIONS (deg) THEN 3 translations (mm)")
+        verdict = "ambiguous_use_convention"
+
+    return verdict, lines
+
+
+def plot_motion(arr, out_png, tr=None):
+    """
+    Plot the 6 motion parameters across time.
+
+    The figure is split into two panels:
+    - columns 1-3
+    - columns 4-6
+
+    If TR is provided, the x-axis is shown in seconds.
+    Otherwise, the x-axis is shown as volume index.
+    """
+    n = arr.shape[0]
+    x = np.arange(n) * tr if tr else np.arange(n)
+    xlabel = "time (s)" if tr else "volume index"
+
+    fig, axes = plt.subplots(2, 1, figsize=(11, 7), sharex=True)
+
+    # First three columns
+    for j in range(3):
+        axes[0].plot(x, arr[:, j], lw=0.9, label=f"col{j+1}")
+    axes[0].set_title("Motion parameters - columns 1-3")
+    axes[0].legend(loc="upper right", ncol=3, fontsize=8)
+    axes[0].grid(alpha=0.3)
+
+    # Last three columns
+    for j in range(3, 6):
+        axes[1].plot(x, arr[:, j], lw=0.9, label=f"col{j+1}")
+    axes[1].set_title("Motion parameters - columns 4-6")
+    axes[1].legend(loc="upper right", ncol=3, fontsize=8)
+    axes[1].grid(alpha=0.3)
+    axes[1].set_xlabel(xlabel)
+
+    fig.tight_layout()
+    fig.savefig(out_png, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+
+def main():
+    """
+    Main entry point.
+
+    Workflow:
+    1) read motion file,
+    2) validate shape,
+    3) compute statistics,
+    4) guess reference volume,
+    5) print heuristic interpretation,
+    6) save plot and CSV summary.
+    """
+    ap = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument("--motion", required=True)
+    ap.add_argument("--out-dir", required=True)
+    ap.add_argument("--tr", type=float, default=None, help="optional, for x-axis in seconds")
+    ap.add_argument("--n-expected", type=int, default=None, help="optional, assert row count (e.g. 407)")
+    a = ap.parse_args()
+
+    os.makedirs(a.out_dir, exist_ok=True)
+
+    arr = load_motion(a.motion)
+    print(f"[load] {a.motion} -> shape {arr.shape}, dtype {arr.dtype}")
+
+    if arr.ndim != 2 or arr.shape[1] != 6:
+        print(
+            f"[warn] expected an (N, 6) array; got {arr.shape}. "
+            "This may not be a standard 6-DOF motion file."
+        )
+
+    if a.n_expected is not None and arr.shape[0] != a.n_expected:
+        print(
+            f"[warn] row count {arr.shape[0]} != expected {a.n_expected} "
+            "(check for dropped/appended volumes)."
+        )
+
+    # Save per-column statistics
+    stats = per_column_stats(arr)
+    stats_path = os.path.join(a.out_dir, "motion_column_stats.csv")
+    stats.to_csv(stats_path, index=False)
+    print("\n[stats] per-column summary:")
+    print(stats.to_string(index=False))
+
+    # Estimate reference volume
+    ref_idx, ref_norm = reference_volume_guess(arr)
+    print(f"\n[ref?] row closest to all-zero: index {ref_idx} (||row||={ref_norm:.4g})")
+    print("       if this is ~0, motion is expressed relative to that reference volume.")
+
+    # Rotation / translation heuristic
+    print("\n[heuristic] translation-vs-rotation suggestion (value ranges only):")
+    if arr.shape[1] == 6:
+        _, lines = rotation_triplet_heuristic(arr)
+        for ln in lines:
+            print(ln)
+
+    # Save motion plot
+    out_png = os.path.join(a.out_dir, "motion_parameters.png")
+    plot_motion(arr, out_png, tr=a.tr)
+    print(f"\n[plot] saved -> {out_png}")
+    print(f"[stats] saved -> {stats_path}")
+    print("\n[note] columns are labelled GENERICALLY (col1..col6). Confirm order/units "
+          "against the producing tool before assigning trans/rot meaning.")
+
+
+if __name__ == "__main__":
+    main()

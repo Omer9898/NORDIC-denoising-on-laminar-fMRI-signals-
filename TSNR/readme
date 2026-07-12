@@ -1,1 +1,25 @@
+tSNR
+Overview
+This folder contains the temporal signal-to-noise ratio (tSNR) quality-control analysis used to compare the functional time series before and after NORDIC denoising.
 
+Purpose
+The goal of this step is to evaluate whether NORDIC improved temporal stability in the 4D functional data. In this project, tSNR is used as a practical quality-control metric rather than as a direct measure of activation strength.
+
+Why tSNR was used
+For each voxel, tSNR is defined as the temporal mean divided by the temporal standard deviation across time. Higher tSNR indicates a more stable signal relative to temporal noise, which makes it suitable for assessing the effect of denoising.
+
+Processing summary
+The analysis was performed on the full 4D magnitude series before and after NORDIC for each run. Voxelwise temporal mean and temporal standard deviation were computed, valid voxels were selected, and a whole-brain mean tSNR value was extracted for comparison.
+
+Outputs
+Typical outputs in this folder may include:
+
+Whole-brain tSNR summary tables.
+
+Before-versus-after comparison figures.
+
+Short reporting text describing the tSNR findings.
+
+Notes
+This comparison answers whether temporal stability improved after NORDIC. It does not by itself determine whether statistical activation improved in the GLM results.
+ has been applied. For final QC, the overlay PNG is usually the clearest output for visual inspection.

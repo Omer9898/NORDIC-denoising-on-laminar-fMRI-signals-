@@ -1,0 +1,11 @@
+raw_index,interp,r_support,r_full,r_mask,rmse,nrmse
+0,lanczosWindowedSinc,0.99997,0.99998,,3.7186,0.00067
+0,linear,0.99477,0.99626,,49.0688,0.00883
+2,lanczosWindowedSinc,0.98422,0.98884,,84.6364,0.01523
+2,linear,0.98417,0.98882,,84.4932,0.0152
+1,linear,0.98365,0.98846,,85.8554,0.01545
+5,linear,0.98342,0.98829,,86.4135,0.01555
+1,lanczosWindowedSinc,0.98341,0.98827,,86.833,0.01563
+5,lanczosWindowedSinc,0.98314,0.98808,,87.3487,0.01572
+10,linear,0.98224,0.98747,,89.4032,0.01609
+10,lanczosWindowedSinc,0.9815,0.98692,,91.5662,0.01648

@@ -1,0 +1,4 @@
+comparison,moving_filename,target_filename,raw_index,pearson_r,rmse,nrmse,shape,zooms,qform_code,sform_code
+pre_vs_groundtruth,pre_vol0000_Warped-to-Anat.nii.gz,mag_POCS_r1_1000_Warped-to-Anat.nii.gz,0,0.99477,49.068759,0.00883,240x340x340,"0.7500,0.7500,0.7500",1,1
+post_vs_groundtruth,post_vol0000_Warped-to-Anat.nii.gz,mag_POCS_r1_1000_Warped-to-Anat.nii.gz,0,0.991381,62.601636,0.011265,240x340x340,"0.7500,0.7500,0.7500",1,1
+pre_vs_post,post_vol0000_Warped-to-Anat.nii.gz,pre_vol0000_Warped-to-Anat.nii.gz,0,0.998249,29.038151,0.00613,240x340x340,"0.7500,0.7500,0.7500",1,1

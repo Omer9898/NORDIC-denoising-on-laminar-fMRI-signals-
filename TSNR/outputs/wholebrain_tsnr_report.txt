@@ -1,0 +1,23 @@
+Whole-brain tSNR before vs after NORDIC
+======================================
+
+Definition:
+tSNR(v) = mean_t(v) / std_t(v)
+
+This analysis was performed on whole-brain valid voxels from each 4D run.
+A voxel was considered valid if mean>0, std>0, and both values were finite.
+
+Per-run results:
+ run  before_n_valid_voxels  after_n_valid_voxels  before_mean_tsnr  after_mean_tsnr  delta_mean_tsnr  before_median_tsnr  after_median_tsnr  delta_median_tsnr  percent_change
+   1                4851000               4811314          3.517904         5.744437         2.226533            1.912324           3.152930           1.240606       63.291456
+   2                4851000               4814015          3.977559         7.314197         3.336638            2.003078           3.817225           1.814147       83.886571
+   3                4851000               4817802          3.968887         7.237900         3.269012            2.016262           3.816648           1.800386       82.365968
+
+Group summary across runs:
+ n_runs  mean_before  sd_before  mean_after  sd_after  mean_difference  sd_difference  mean_percent_change  paired_t_stat  paired_t_pvalue  wilcoxon_stat  wilcoxon_pvalue
+      3      3.82145   0.262914    6.765511  0.885099         2.944061       0.622317            76.514665       8.193997         0.014569            0.0             0.25
+
+Interpretation notes:
+- Higher tSNR means better temporal stability relative to temporal noise.
+- Positive delta_mean_tsnr means NORDIC improved whole-brain tSNR.
+- With only 3 runs, formal p-values should be interpreted cautiously.

@@ -1,0 +1,7 @@
+n_runs,mean_before,sd_before,mean_after,sd_after,mean_difference,sd_difference,mean_percent_change,paired_t_stat,paired_t_pvalue,wilcoxon_stat,wilcoxon_pvalue
+3,3.821450075,0.262914328,6.765511036,0.885098773,2.944060961,0.622316962,76.51466499,8.193996747,0.014569207,0,0.25
+,,,,,,,,,,,
+run,before_NORDIC_wholebrain_tsnr,after_NORDIC_wholebrain_tsnr,difference_after_minus_before,percent_change,,,,,,,
+1,4.656680584,7.206186295,2.549505711,54.74942215,,,,,,,
+2,5.40043211,9.651349068,4.250916958,78.71438565,,,,,,,
+3,5.381364822,9.606951714,4.225586892,78.52258733,,,,,,,

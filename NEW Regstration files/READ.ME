@@ -1,0 +1,24 @@
+# NEW Registration files
+
+## Overview
+This folder contains registration-related and geometry-validation files used to verify that the post-NORDIC functional data remained correctly aligned to the original native EPI reference space.
+
+## Purpose
+The purpose of this section is to document and store files related to spatial consistency checks, reference comparisons, and any registration-supporting outputs needed during the post-NORDIC workflow.
+
+## Why this step was needed
+Because this project uses laminar fMRI data, the workflow was intentionally conservative with respect to image geometry. Unnecessary interpolation, uncontrolled header inconsistencies, or avoidable resampling steps can reduce spatial precision and complicate later first-level analysis.
+
+## Relation to the pipeline
+After the post-NORDIC outputs were generated, the next critical task was to confirm that they were still on the same native grid as the trusted pre-NORDIC reference. This included checking image shape, voxel spacing, affine matrix, and header consistency.
+
+## What belongs in this folder
+This folder may contain:
+- Reference volumes used for alignment checks
+- Geometry comparison files
+- Registration-supporting intermediate outputs
+- Validation screenshots or notes
+- Files related to anatomy-to-functional or functional-to-reference checking
+
+## Notes
+This folder is intended for registration and geometry-related material only. Files related to statistical modeling should be placed in the GLM section, while ROI quality-control overlays should be placed in the Functional Mask section.

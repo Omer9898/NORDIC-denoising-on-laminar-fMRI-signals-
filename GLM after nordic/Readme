@@ -1,0 +1,37 @@
+# GLM after nordic
+
+## Overview
+This folder contains the first-level GLM analysis performed on the post-NORDIC functional data in native EPI space.
+
+## Purpose
+The purpose of this step is to model task-related responses separately for run 1, run 2, and run 3 while preserving laminar specificity and avoiding unnecessary blurring across cortical depth.
+
+## Processing strategy
+The first-level GLM was fit separately for each run using the complete 4D post-NORDIC magnitude series. The model followed an SPM-style configuration with:
+- canonical SPM HRF
+- AR(1) noise model
+- cosine drift terms
+- high-pass filtering
+- no spatial smoothing
+- native-space fitting only
+
+## Input data
+The analysis used:
+- the full 4D post-NORDIC magnitude image for each run
+- event timing information stored as onset, duration, and trial type
+- model settings consistent with the original workflow
+
+## Why full 4D data were required
+A single 3D image is not sufficient for GLM fitting. Therefore, the complete time series was used for each run so that task events could be modeled properly across time.
+
+## Typical outputs
+This folder may contain:
+- design_matrix.csv
+- events_runX_used.csv
+- effect-size maps
+- t-statistic maps
+- z-score maps
+- run-specific quality-control summaries
+
+## Notes
+Subfolders such as run1, run2, and run3 can be used to keep the outputs organized. Only final modeling outputs and related design files should be stored here.
